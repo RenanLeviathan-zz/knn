@@ -2,46 +2,48 @@
 # To change this template file, choose Tools | Templates
 # and open the template in the editor.
 import math
+import operator
+import random
 def minimo(instances):
     m=0
-    minim=[0,0,0,0]
+    minim=[]
     for j in range(0,4):
         for i in range(0,len(instances)):
             if i>0:
                 if instances[i][j] < m:m=instances[i][j]
             else:
                m=instances[i][j]
-        minim[j]=m
+        minim.append(m)
     return minim
 
 def maximo(instances):
     m=0
-    maxim=[0,0,0,0]
+    maxim=[]
     for j in range(0,4):
         for i in range(0,len(instances)):
             if i>0:
                 if instances[i][j] > m:m=instances[i][j]
             else:
                m=instances[i][j]
-        maxim[j]=m
+        maxim.append(m)
     return maxim
 
 def media(instances):
-    media=[0,0,0,0]
+    media=[]
     soma=0
     for j in range(0,4):
         for i in range(0,len(instances)):
             soma+=instances[i][j];
-        media[j]=soma/len(instances)
+        media.append(soma/len(instances))
     return media
 
 def std(instances,medias):
-    sd=[0,0,0,0]
+    sd=[]
     soma=0
     for j in range(0,4):
         for i in range(0,len(instances)):
             soma+=math.pow(instances[i][j]-medias[j],2)
-        sd[j]=math.sqrt(soma/len(instances))
+        sd.append(math.sqrt(soma/len(instances)))
     return sd
 
 def dist_euc(p,q,al):
@@ -52,7 +54,7 @@ def dist_euc(p,q,al):
     dist=math.sqrt(soma)
     return dist
 
-def matrix_diss(instances):
+def matrix_sim(instances):
     matrix=[]
     for i in range(0,len(instances)):
         row=[]
@@ -60,3 +62,92 @@ def matrix_diss(instances):
             row.append(dist_euc(instances[i],instances[j],4))
         matrix.append(row)
     return matrix
+
+def get_neighbors(test,t_set,k):
+    dist=[]
+    length=len(test)-1
+    for x in range(len(t_set)):
+        d=dist_euc(test,t_set[x],length)
+        dist.append((t_set[x],d))
+    dist.sort(key=operator.itemgetter(1))
+    neighbors=[]
+    for x in range(k):
+        neighbors.append(dist[x][0])
+    return neighbors
+    
+def get_resposta(neighbors):
+    class_votes={}
+    for x in range(len(neighbors)):
+        resposta = neighbors[x][-1]
+        if resposta in class_votes:
+            class_votes[resposta]+=1
+        else:
+            class_votes[resposta]=1
+    votos=sorted(class_votes.items(),key=operator.itemgetter(1),reverse=True)
+    return votos[0][0]
+
+def get_accuracy(testSet,predicts):
+    certas=0
+    for x in range(len(testSet)):
+        if testSet[x][-1] == predicts[x]:
+            certas+=1
+    return (certas/float(len(testSet)))*100.0
+
+def normalize(lista,mn,mx):
+    norm=[]
+    length = len(lista[0])
+    for x in range(len(lista)):
+        tup=[]
+        for y in range(length):
+            if y <=3:
+                j = ((lista[x][y]-mn[y])/(mx[y]-mn[y]))
+                tup.append(j)
+            else:
+                s = lista[x][y]
+                tup.append(s)
+        norm.append(tup)
+    return norm
+    
+def normalize_z(lista,med,sd):
+    norm=[]
+    length = len(lista[0])
+    for x in range(len(lista)):
+        tup=[]
+        for y in range(length):
+            if y <=3:
+                attr = ((lista[x][y]-med[y])/sd[y])
+                tup.append(attr)
+            else:
+                s = lista[x][y]
+                tup.append(s)
+        norm.append(tup)
+    return norm
+    
+def prediction(test,training,k):
+    neighbors=[]
+    predictions=[]
+    for i in range(len(test)):
+        neighbors=get_neighbors(test[i],training,k)
+        result = get_resposta(neighbors)
+        predictions.append(result)
+        print('> adivinhada = '+repr(result)+', real = '+repr(test[i][-1]))
+    acc = get_accuracy(test,predictions)
+    print('Precisão = '+repr(acc)+'%')
+    
+def cross_validation(set1,sets):
+    for i in range(len(sets)):
+        print("Conjunto "+repr(i+1))
+        prediction(set1,sets[i],len(sets[i])-1)
+        
+def create_subsets(base,folds):
+    sub_tam=int(len(base)/folds)
+    sets=[]
+    for i in range(folds):
+        subconj=[]
+        for j in range(sub_tam):
+            el = random.choice(base)
+            subconj.append(el)
+            base.remove(el)
+        sets.append(subconj)
+    return sets
+       
