@@ -1,13 +1,13 @@
-# To change this license header, choose License Headers in Project Properties.
-# To change this template file, choose Tools | Templates
-# and open the template in the editor.
+# Modulo KNN 
 import math
 import operator
 import random
+
 def minimo(instances):
     m=0
     minim=[]
-    for j in range(0,4):
+    length = len(instances[0])-1
+    for j in range(0,length):
         for i in range(0,len(instances)):
             if i>0:
                 if instances[i][j] < m:m=instances[i][j]
@@ -19,7 +19,8 @@ def minimo(instances):
 def maximo(instances):
     m=0
     maxim=[]
-    for j in range(0,4):
+    length = len(instances[0])-1
+    for j in range(0,length):
         for i in range(0,len(instances)):
             if i>0:
                 if instances[i][j] > m:m=instances[i][j]
@@ -31,19 +32,23 @@ def maximo(instances):
 def media(instances):
     media=[]
     soma=0
-    for j in range(0,4):
+    length = len(instances[0])-1
+    for j in range(0,length):
         for i in range(0,len(instances)):
             soma+=instances[i][j];
         media.append(soma/len(instances))
+        soma=0
     return media
 
 def std(instances,medias):
     sd=[]
     soma=0
-    for j in range(0,4):
+    length = len(instances[0])-1
+    for j in range(0,length):
         for i in range(0,len(instances)):
             soma+=math.pow(instances[i][j]-medias[j],2)
-        sd.append(math.sqrt(soma/len(instances)))
+        sd.append(math.sqrt(soma/(len(instances)-1)))
+        soma=0
     return sd
 
 def dist_euc(p,q,al):
@@ -122,7 +127,7 @@ def normalize_z(lista,med,sd):
                 tup.append(s)
         norm.append(tup)
     return norm
-    
+acclist=[]
 def prediction(test,training,k):
     neighbors=[]
     predictions=[]
@@ -132,12 +137,19 @@ def prediction(test,training,k):
         predictions.append(result)
         print('> adivinhada = '+repr(result)+', real = '+repr(test[i][-1]))
     acc = get_accuracy(test,predictions)
+    acclist.append(acc)
     print('Precisão = '+repr(acc)+'%')
-    
-def cross_validation(set1,sets):
+
+def get_acc_avg():
+    s=0
+    for i in range(len(acclist)):
+        s+=acclist[i]
+    return s/len(acclist)
+
+def cross_validation(set1,sets,k):
     for i in range(len(sets)):
         print("Conjunto "+repr(i+1))
-        prediction(set1,sets[i],len(sets[i])-1)
+        prediction(set1,sets[i],k)
         
 def create_subsets(base,folds):
     sub_tam=int(len(base)/folds)
