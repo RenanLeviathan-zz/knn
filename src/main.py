@@ -70,7 +70,7 @@ def main():
             nlista.remove(el)
         #predicao de classes
         #hold-out
-        print("Hold-out base normal")
+        print("Hold-out")
         knn.prediction(nlista,t_set,k)
     elif option == 1:
         #cross validation
