@@ -138,7 +138,7 @@ def prediction(test,training,k):
         print('> adivinhada = '+repr(result)+', real = '+repr(test[i][-1]))
     acc = get_accuracy(test,predictions)
     acclist.append(acc)
-    print('Precisão = '+repr(acc)+'%')
+    print('Acuracia = '+repr(acc)+'%')
 
 def get_acc_avg():
     s=0
